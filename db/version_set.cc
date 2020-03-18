@@ -810,6 +810,7 @@ Status VersionSet::LogAndApply(VersionEdit* edit, port::Mutex* mu) {
     assert(descriptor_file_ == nullptr);
     new_manifest_file = DescriptorFileName(dbname_, manifest_file_number_);
     edit->SetNextFile(next_file_number_);
+    //::young::
     s = env_->NewWritableFile(new_manifest_file, &descriptor_file_);
     if (s.ok()) {
       descriptor_log_ = new log::Writer(descriptor_file_);
@@ -824,9 +825,12 @@ Status VersionSet::LogAndApply(VersionEdit* edit, port::Mutex* mu) {
     // Write new record to MANIFEST log
     if (s.ok()) {
       std::string record;
+	//::young:: record is data file????
       edit->EncodeTo(&record);
+	//::young::LogAndApply, flush point (call AddRecord())
       s = descriptor_log_->AddRecord(record);
       if (s.ok()) {
+	//::young::LogAndApply, sync point
         s = descriptor_file_->Sync();
       }
       if (!s.ok()) {
@@ -1064,6 +1068,8 @@ void VersionSet::Finalize(Version* v) {
   v->compaction_score_ = best_score;
 }
 
+
+//::young:: write snaptshot
 Status VersionSet::WriteSnapshot(log::Writer* log) {
   // TODO: Break up into multiple records to reduce memory usage on recovery?
 

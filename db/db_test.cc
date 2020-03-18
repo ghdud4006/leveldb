@@ -135,7 +135,7 @@ class SpecialEnv : public EnvWrapper {
      private:
       SpecialEnv* const env_;
       WritableFile* const base_;
-
+	//::young:: file operation (e.g. sync, flush, close, append is defined)
      public:
       DataFile(SpecialEnv* env, WritableFile* base) : env_(env), base_(base) {}
       ~DataFile() { delete base_; }
