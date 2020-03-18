@@ -695,6 +695,7 @@ void DBImpl::BackgroundCall() {
   background_work_finished_signal_.SignalAll();
 }
 
+//::young:: BackgroundCompaction
 void DBImpl::BackgroundCompaction() {
   mutex_.AssertHeld();
 
@@ -730,8 +731,12 @@ void DBImpl::BackgroundCompaction() {
     assert(c->num_input_files(0) == 1);
     FileMetaData* f = c->input(0, 0);
     c->edit()->RemoveFile(c->level(), f->number);
+    
+    //::young:: add SSTable to version
     c->edit()->AddFile(c->level() + 1, f->number, f->file_size, f->smallest,
                        f->largest);
+    
+    //::young:: version setting and call LogAndApply()
     status = versions_->LogAndApply(c->edit(), &mutex_);
     if (!status.ok()) {
       RecordBackgroundError(status);
