@@ -73,7 +73,7 @@ Status Writer::AddRecord(const Slice& slice) {
       type = kMiddleType;
     }
 
-    s = EmitPhysicalRecord(type, ptr, fragment_length);//::young::normal write logging, flush
+    s = EmitPhysicalRecord(type, ptr, fragment_length);//::young::AddRecord, flush
     ptr += fragment_length;
     left -= fragment_length;
     begin = false;

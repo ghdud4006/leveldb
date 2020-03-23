@@ -566,6 +566,7 @@ void DBImpl::CompactMemTable() {
     s = versions_->LogAndApply(&edit, &mutex_);
   }
 
+  //::young::release imm
   if (s.ok()) {
     // Commit to the new state
     imm_->Unref();
@@ -750,7 +751,7 @@ void DBImpl::BackgroundCompaction() {
         status.ToString().c_str(), versions_->LevelSummary(&tmp));
   } else {
     CompactionState* compact = new CompactionState(c);
-    status = DoCompactionWork(compact);
+    status = DoCompactionWork(compact); //::young:: real compaction work
     if (!status.ok()) {
       RecordBackgroundError(status);
     }
@@ -847,7 +848,7 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
   compact->total_bytes += current_bytes;
   delete compact->builder;
   compact->builder = nullptr;
-
+	//::young:: last poiunt~~~~
   //::young:: compaction output file sync point FinishCompactionOutputFile  
   // Finish and check for file errors
   if (s.ok()) {
@@ -875,6 +876,8 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
   return s;
 }
 
+
+//::young::save compaction output file point
 Status DBImpl::InstallCompactionResults(CompactionState* compact) {
   mutex_.AssertHeld();
   Log(options_.info_log, "Compacted %d@%d + %d@%d files => %lld bytes",
@@ -961,7 +964,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
         has_current_user_key = true;
         last_sequence_for_key = kMaxSequenceNumber;
       }
-
+	//::young:: compaction drop key
       if (last_sequence_for_key <= compact->smallest_snapshot) {
         // Hidden by an newer entry for same user key
         drop = true;  // (A)
@@ -1007,7 +1010,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       // Close output file if it is big enough
       if (compact->builder->FileSize() >=
           compact->compaction->MaxOutputFileSize()) {
-        status = FinishCompactionOutputFile(compact, input);
+        status = FinishCompactionOutputFile(compact, input); //::young:: sync output file on compaction 
         if (!status.ok()) {
           break;
         }
@@ -1044,7 +1047,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
   stats_[compact->compaction->level() + 1].Add(stats);
 
   if (status.ok()) {
-    status = InstallCompactionResults(compact);
+    status = InstallCompactionResults(compact);//::young:: install compaction output file
   }
   if (!status.ok()) {
     RecordBackgroundError(status);
@@ -1148,7 +1151,7 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
     } else if (imm != nullptr && imm->Get(lkey, value, &s)) {
       // Done
     } else {
-      s = current->Get(options, lkey, value, &stats);
+      s = current->Get(options, lkey, value, &stats); // version searching // sstable searching
       have_stat_update = true;
     }
     mutex_.Lock();
@@ -1233,7 +1236,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
     {
       mutex_.Unlock();
       //::young:: normal write's logging point 
-      status = log_->AddRecord(WriteBatchInternal::Contents(write_batch));
+      status = log_->AddRecord(WriteBatchInternal::Contents(write_batch));//::young:: Contents() returns str
       bool sync_error = false;
       if (status.ok() && options.sync) {
         status = logfile_->Sync();// logging sync

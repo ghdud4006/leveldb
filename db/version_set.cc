@@ -828,7 +828,7 @@ Status VersionSet::LogAndApply(VersionEdit* edit, port::Mutex* mu) {
 	//::young:: record is data file????
       edit->EncodeTo(&record);
 	//::young::LogAndApply, flush point (call AddRecord())
-      s = descriptor_log_->AddRecord(record);
+      s = descriptor_log_->AddRecord(record); //flushing
       if (s.ok()) {
 	//::young::LogAndApply, sync point
         s = descriptor_file_->Sync();
