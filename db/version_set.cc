@@ -1035,6 +1035,7 @@ void VersionSet::Finalize(Version* v) {
   int best_level = -1;
   double best_score = -1;
 
+  //::young::select next compaction level 
   for (int level = 0; level < config::kNumLevels - 1; level++) {
     double score;
     if (level == 0) {
